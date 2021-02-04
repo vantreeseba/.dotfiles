@@ -1,120 +1,110 @@
 " vim:fdm=marker
 set nocompatible
 
-" Dein Settings 
-if has('vim_starting')
-  set runtimepath+=~/.vim/dein/repos/github.com/Shougo/dein.vim
-endif
+call plug#begin('~/.vim/bundle')
+  Plug 'tpope/vim-surround' " Adds movement/changes for surrounds
+  Plug 'tpope/vim-repeat'
 
+  Plug 'scrooloose/nerdtree'
+  Plug 'scrooloose/nerdcommenter'
 
-if dein#load_state('~/.vim/bundle')
-  call dein#begin(expand('~/.vim/bundle'))
-  call dein#add('Shougo/dein.vim')
-  call dein#add('wsdjeg/dein-ui.vim')
+  Plug 'chriskempson/base16-vim'
+  Plug 'editorconfig/editorconfig-vim'
 
-  call dein#add('konfekt/fastfold')
-  call dein#add('tpope/vim-surround')
-  call dein#add('scrooloose/nerdtree', {'on_cmd':[
-     \ 'NERDTreeToggle',
-     \ 'NERDTreeFind'
-     \]})
-  call dein#add('scrooloose/nerdcommenter')
-  call dein#add('chriskempson/base16-vim')
-  call dein#add('Raimondi/delimitMate')
-  call dein#add('editorconfig/editorconfig-vim')
-  call dein#add('ashisha/image.vim')
-  call dein#add('itchyny/lightline.vim')
-  call dein#add('itchyny/vim-gitbranch')
-  call dein#add('mengelbrecht/lightline-bufferline')
+  Plug 'itchyny/lightline.vim'
+  Plug 'mengelbrecht/lightline-bufferline'
 
-  " Toggle quickfix/location list
-  call dein#add('Valloric/ListToggle')
-  call dein#add('Valloric/MatchTagAlways', {'on_ft': [
-    \ 'vue',
-    \ 'jsx',
-    \ 'html',
-    \ 'xhtml',
-    \ 'xml' ]})
-  call dein#add('mattn/emmet-vim', {'on_ft': [
-    \ 'vue',
-    \ 'jsx',
-    \ 'html',
-    \ 'xhtml',
-    \ 'xml' ]})
+  Plug 'Valloric/MatchTagAlways'
+  Plug 'neoclide/coc.nvim', {'branch': 'release'}
+  " language syntax definitions
+  Plug 'sheerun/vim-polyglot'
+  Plug 'jparise/vim-graphql'
+  " Does doc generation.
+  " Plug 'kkoomen/vim-doge', { 'do': { -> doge#install() } }
+  Plug 'kkoomen/vim-doge', { 'dir':'~/code/vantreeseba/vim-doge', 'do': { -> doge#install() } }
+  " Does coverage reporting when unit tests exist.
+  Plug 'ruanyl/coverage.vim'
+  " viml unit testing
+  Plug 'junegunn/vader.vim'
 
-  call dein#add('junegunn/fzf', {'build': 'yes | ./install'})
-  call dein#add('junegunn/fzf.vim')
-  call dein#add('neoclide/coc.nvim', {'merge': 0, 'build': './install.sh nightly'})
-  call dein#add('Shougo/echodoc.vim')
+" Initialize plugin system
+call plug#end()
 
-  " Language support
-  call dein#add('sheerun/vim-polyglot')
-  call dein#add('honza/vim-snippets')
-  call dein#add('jparise/vim-graphql')
-  call dein#add('darthmall/vim-vue', {'on_ft': ['javascript', 'vue']})
-  call dein#add('heavenshell/vim-jsdoc', {'on_ft':['javascript']})
-
-  call dein#add('terryma/vim-multiple-cursors')
-
-  call dein#end()
-  call dein#save_state()
-endif
-" 
-" VIM Settings 
+let g:coc_global_extensions = [ 
+      \ 'coc-diagnostic',
+      \ 'coc-snippets',
+      \ 'coc-git',
+      \ 'coc-vimlsp',
+      \ 'coc-omnisharp',
+      \ 'coc-pairs',
+      \ 'coc-json',
+      \ 'coc-lists',
+      \ 'coc-haxe'
+      \ ]
 
 set mouse=a " Enable mouse in all modes
+set t_Co=256 " Set terminal to 256 colors.
+set t_AB=^[[48;5;%dm
+set t_AF=^[[38;5;%dm
 let base16colorspace=256
-colorscheme base16-monokai
+colorscheme base16-monokai-vantreeseba
 
 let mapleader=','   "Set the leader key to baus status
-set number      " Show line numbers
-set showtabline=2 " Always show the tab line
-
-"set autochdir  " set PWD to current opened buffers pwd
-set hidden    " Hide buffers instead of closing and forcing save
-set nobackup
+set number          " Show line numbers
+set showtabline=2   " Always show the tab line
+set hidden          " Hide buffers instead of closing and forcing save
+set nobackup        " dont create file~ or file.bak
 set noswapfile
 set nowritebackup
+set autoread        " Automatically reload / read files changed outside of vim.
 
+" " Triger `autoread` when files changes on disk
+" https://unix.stackexchange.com/questions/149209/refresh-changed-content-of-file-opened-in-vim/383044#383044
+" https://vi.stackexchange.com/questions/13692/prevent-focusgained-autocmd-running-in-command-line-editing-mode
+autocmd FocusGained,BufEnter,CursorHold,CursorHoldI * if mode() != 'c' | checktime | endif
+
+" Notification after file change
+" https://vi.stackexchange.com/questions/13091/autocmd-event-for-autoread
+autocmd FileChangedShellPost *
+  \ echohl WarningMsg | echo "File changed on disk. Buffer reloaded." | echohl None
+
+set encoding=utf-8
 set hlsearch    " Highlight search reasults
 set incsearch   " Highlight as you type
-set ignorecase
-set smartcase
+set ignorecase  " Ignore case in search.
+set smartcase   " Do smart case searching, i.e. /The matches "The", but /the matches both the and The.
 
-set ttyfast " Tell vim to expect a fast terminal
+set ttyfast     " Tell vim to expect a fast terminal
 set lazyredraw
 
-set history=250 " set up a longer history
-set undolevels=250 "set up longer undo history
+set history=250     " set up a longer history
+set undolevels=250  "set up longer undo history
 set visualbell
 set noerrorbells
 
-set nowrap      " turn off line wrap
+set nowrap          " turn off line wrap
 set colorcolumn=80  " put a color column at 80 chars
 
-" do g on replace by default
-set gdefault
+set gdefault        " do global (g) on replace by default
 set modeline
 set ls=2
 set modelines=10
+
+" Set the title in linux to show the current file you're editing.
 set title
-set titleold=urxvt
 set titlestring=%F
 
-set updatetime=500 "make cursorhold only trigger after a 500ms pause
-
-set completeopt-=preview
-" set completeopt+=noinsert
-
-"" Set background to none so it's transparent
-highlight Normal ctermbg=none
-highlight NonText ctermbg=none
+set updatetime=250 "make cursorhold only trigger after a 250ms pause
+autocmd InsertEnter * set timeoutlen=200 ttimeoutlen=200
+autocmd InsertLeave * set timeoutlen=1000 ttimeoutlen=1000
 
 nmap <leader><Space> :set list!<CR>
 set listchars=tab:↹·,space:␣,eol:↵,trail:␣
 
-" 
-" Key Mappings 
+"""""" Key Mappings  """"""""
+" Make indenting keep selection in visual mode.
+vnoremap < <gv
+vnoremap > >gv
 
 " Disable the arrow keys like a baus, instead they change window size
 nnoremap <Up> <C-W>+
@@ -122,13 +112,13 @@ nnoremap <Down> <C-W>-
 nnoremap <Left> <C-W><
 nnoremap <Right> <C-W>>
 
-"Add larger paging for vertical movement
-nnoremap J 5j
-nnoremap K 5k
-xnoremap J 5j
-xnoremap K 5k
+" Map capital J/K to jump paragraphs.
+nnoremap <silent> J 5j
+nnoremap <silent> K 5k
+vnoremap <silent> J 5j
+vnoremap <silent> K 5k
 
-"Buffer movenments.
+" Buffer movements.
 nnoremap <silent> <C-j> :bp<CR>
 nnoremap <silent> <C-k> :bn<CR>
 nnoremap <silent> <C-d> :bd<CR>
@@ -165,6 +155,9 @@ inoremap <C-v> <C-R>+
 nmap ge :lnext<CR>
 nmap gp :lprev<CR>
 
+nmap <S-Right> :lnext<CR>
+nmap <S-Left> :lprev<CR>
+
 "Make shift-tab go to prev jump location (tab goes to next).
 nmap <S-TAB> <C-O>
 
@@ -173,28 +166,26 @@ set pastetoggle=<leader>p
 
 "toggle relative numbering
 nnoremap <Leader>n :set relativenumber!<cr>
-" 
-" FileType Settings 
+ 
+""""" FileType Settings  """""
 syntax on
 set synmaxcol=200
 filetype plugin on
 filetype plugin indent on
+set foldmethod=manual
 
 au FileType javascript setlocal colorcolumn=100
 
 augroup ft
   au!
+  autocmd BufNewFile,BufRead *.prisma set ft=graphql
+  autocmd BufNewFile,BufRead *.hxml set ft=hxml
+  autocmd BufNewFile,BufRead PULLREQ_EDITMSG set ft=gitcommit
   au FileType vue setlocal ft=javascript.vue
+  au FileType js setlocal ft=javascript.js
 augroup END
 
-augroup folding
-  au!
-  " au BufReadPre * setlocal foldmethod=indent
-  " au BufReadPre *.js setlocal foldmethod=syntax
-  " au BufReadPre *.hx setlocal foldmethod=syntax
-augroup END
-
-"  Custom profiling functions
+""""""  Custom profiling functions """"""
 function! StartProfile()
   :profile start profile.log
   :profile func *
@@ -208,32 +199,45 @@ function! StopProfile()
   :noautocmd qall!
 endfunction
 
+""""""" PLUGIN SETTINGS  """""""
+" Polyglot
 
-" 
-" PLUGIN SETTINGS 
-
-" EditorConfig Settings
-" let g:EditorConfig_core_mode = 'python_external'
+let g:vim_markdown_fenced_languages = ['js=javascript']
 
 " Lightline settings
-" Customize filename
-function! LightlineFileName() 
-  let modified = &modified ? '+' : ''
-  return &filetype ==# 'fzf' ? 'FZF' :
-        \ expand('%:t') !=# '' ? expand('%:t').modified : '[No Name]'.modified
-endfunction
 
-function! StatusDiagnostic() abort
+" Use autocmd to force lightline update on coc change.
+autocmd User CocStatusChange,CocDiagnosticChange,CocGitStatusChange call lightline#update()
+autocmd User CocGitStatusChange set tabline=%!lightline#tabline()
+
+function! CocErrorCount() abort
   let info = get(b:, 'coc_diagnostic_info', {})
   if empty(info) | return '' | endif
   let msgs = []
   if get(info, 'error', 0)
-    call add(msgs, 'E' . info['error'])
+    call add(msgs, "\uf12a" . info['error'])
   endif
+  return join(msgs) 
+endfunction
+
+function! CocWarningCount() abort
+  let info = get(b:, 'coc_diagnostic_info', {})
+  if empty(info) | return '' | endif
+  let msgs = []
   if get(info, 'warning', 0)
-    call add(msgs, 'W' . info['warning'])
+    call add(msgs, "\uf12a" . info['warning'])
   endif
-  return join(msgs, ' ') 
+  return join(msgs) 
+endfunction
+
+function! CocGitBranch() abort
+  let branch = get(g:, 'coc_git_status', '')
+  return branch
+endfunction
+
+function! CocGitBlame()
+  let blame = get(b:, 'coc_git_blame', '')
+  return winwidth(0) > 120 ? blame : blame[0:(winwidth(0)/2) - 3] . '...'
 endfunction
 
 set noshowmode
@@ -241,99 +245,84 @@ let g:lightline = {
   \ 'colorscheme': 'seoul256',
   \ 'active': {
   \   'left': [[ 'mode', 'paste' ],
-  \            [ 'gitbranch', 'readonly', 'filename']],
-  \   'right': [ [ 'lineinfo', 'cocstatus'],
-  \              [ 'percent' ],
-  \              [ 'fileformat', 'fileencoding', 'filetype'] ]
+  \            [ 'readonly', 'filename'],
+  \            [ 'gitbranch']],
+  \   'right': [ [ 'cocErrorCount', 'cocWarningCount'],
+  \              [ 'lineinfo'],
+  \              [ 'fileencoding', 'filetype'],
+  \            ]
   \ },
   \ 'component_function': {
-  \   'gitbranch': 'gitbranch#name',
-  \   'filename': 'LightlineFileName',
-  \   'cocstatus': 'StatusDiagnostic',
+  \   'gitbranch': 'CocGitBranch',
+  \   'blame': 'CocGitBlame',
   \ },
-  \ 'component_expand': {'buffers': 'lightline#bufferline#buffers'},
-  \ 'component_type': {'buffers': 'tabsel'},
-  \ 'tabline': {'left': [['buffers']], 'right': [[]]}
+  \ 'component_expand': {
+  \   'cocErrorCount': 'CocErrorCount',
+  \   'bufferline': 'LightlineBufferline',
+  \   'buffers': 'lightline#bufferline#buffers',
+  \   'cocWarningCount': 'CocWarningCount',
+  \ },
+  \ 'component_type': {
+  \   'buffers': 'tabsel',
+  \   'cocErrorCount': 'error',
+  \   'cocWarningCount': 'warning'
+  \ },
+  \ 'tabline': {'left': [['buffers']], 'right': [['blame']]},
   \ }
 
-let g:lightline#bufferline#shorten_path=0
+let g:lightline#bufferline#shorten_path=1
 
+" Set colors correctly for coc gutter signs.
+hi CocErrorSign ctermfg=9 ctermbg=18
+hi CocWarningSign ctermfg=130 ctermbg=18
+hi CocInfoSign ctermfg=122 ctermbg=18
+hi CocHintSign ctermfg=122 ctermbg=18
+
+hi Folded ctermbg=0 ctermfg=19
 
 " DelimitMate Config
 let delimiteMate_jump_expansion = 1
  
 " Nerd Commenter mappings
-nnoremap <C-/> <Leader>cs<Space>
-vnoremap <C-/> <Leader>cs<Space>
-inoremap <C-/> <ESC><Leader>cs<Space><CR>i
+nmap <Leader>c<Space> <Plug>NERDCommenterToggle
+vmap <Leader>c<Space> <Plug>NERDCommenterToggle
 
+" Add spaces after comment delimiters by default
 let g:NERDSpaceDelims = 1
-" let g:NERDDefaultAlign = 'left'
-
-"Emmet Settings 
-let g:user_emmet_leader_key = '<c-e>'
-
+" Align line-wise comment delimiters flush left instead of following code indentation
+let g:NERDDefaultAlign = 'left'
+" Allow commenting and inverting empty lines (useful when commenting a region)
+let g:NERDCommentEmptyLines = 1
+" Enable trimming of trailing whitespace when uncommenting
+let g:NERDTrimTrailingWhitespace = 1
+" Enable NERDCommenterToggle to check all selected lines is commented or not 
+let g:NERDToggleCheckAllLines = 1
 " NERDTree configuration 
 let g:NERDTreeChDirMode=2
-let g:NERDTreeIgnore=['node_modules\.*','\.rbc$', '\~$', '\.pyc$', '\.db$', '\.sqlite$', '__pycache__']
+let g:NERDTreeIgnore=['node_modules\.*','\.rbc$', '\~$', '\.pyc$', '\.db$', '\.sqlite$', '__pycache__', '.*\.meta']
 let g:NERDTreeSortOrder=['^__\.py$', '\/$', '*', '\.swp$', '\.bak$', '\~$']
 let g:NERDTreeShowBookmarks=1
 let g:nerdtree_tabs_focus_on_files=1
 let g:NERDTreeMapOpenInTabSilent = '<RightMouse>'
 let g:NERDTreeWinSize = 20
+let g:NERDTreeFileExtensionHighlightFullName = 1
 
 map <leader>t :NERDTreeToggle<CR>
 map <leader>f :NERDTreeFind<CR>
-" 
-" Git-NerdTree plugin 
-let g:NERDTreeIndicatorMapCustom = {
-      \ "Modified"  : "~",
-      \ "Staged"    : "+",
-      \ "Untracked" : "*",
-      \ "Renamed"   : "➜",
-      \ "Unmerged"  : "",
-      \ "Deleted"   : "-",
-      \ "Dirty"     : "~",
-      \ "Clean"     : "",
-      \ "Unknown"   : "?"
-      \ }
- 
-" JsDoc Settings 
-let g:jsdoc_allow_input_prompt  = 1
-let g:jsdoc_input_description   = 1
-let g:jsdoc_underscore_private  = 0
-let g:jsdoc_access_descriptions = 0
-let g:jsdoc_enable_es6 = 1
 
-let g:jsdoc_tags = {}
-let g:jsdoc_tags['returns'] = 'return'
+"" DoGe Settings
+let g:doge_filetype_aliases = {
+\  'javascript': ['vue', 'haxe'],
+\}
 
-let g:jsdoc_custom_args_hook = {
-  \ 'callback\|cb': {
-  \   'type': ' {Function} ',
-  \   'description': 'Callback function'
-  \ }
-  \}
-
-nnoremap <silent> <Leader>cd ?function<CR>:nohl<CR><Plug>(JsDoc)
-" 
-" FZF Settings
-command! -bang -nargs=* Find 
-      \ call fzf#vim#grep(
-      \'rg --column --line-number --no-heading --fixed-strings --smart-case --hidden --follow --glob !.git/* --ignore-file ~/.agignore --color always '
-      \.shellescape(<q-args>), 1, <bang>0)
-
-" Jump to buffer if it exists
-let g:fzf_buffers_jump = 1
-
-" Setup fzf keymaps
-nnoremap <C-p> :Files<cr>
-nnoremap <C-t> :Find
-nnoremap <C-f> yiw :Find <C-r><C-w><cr>
+let g:doge_javascript_settings = {
+\  'omit_redundant_param_types': 1,
+\}
 
 " match tags settings
 let g:mta_filetypes = {
   \ 'html.javascript.vue': 1,
+  \ 'javascript.vue': 1,
   \ 'javascript.jsx': 1,
   \ 'html' : 1,
   \ 'xhtml' : 1,
@@ -342,19 +331,40 @@ let g:mta_filetypes = {
   \ }
 
 " coc Settings.
+let g:coc_snippet_next = '<tab>'
+
+autocmd CursorHold * silent call CocActionAsync('highlight')
+autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+
 function! s:check_back_space() abort
   let col = col('.') - 1
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
-let g:UltiSnipsExpandTrigger='<Nop>'
-
+" Smart tab mapping
 inoremap <silent><expr> <TAB>
       \ pumvisible() ? "\<C-n>" :
+      \ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
       \ <SID>check_back_space() ? "\<TAB>" :
       \ coc#refresh()
 inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+
+" Use <c-space> to trigger completion.
+inoremap <silent><expr> <c-space> coc#refresh()
+
+" navigate chunks of current buffer
+nmap [g <Plug>(coc-git-prevchunk)
+nmap ]g <Plug>(coc-git-nextchunk)
+" show chunk diff at current position
+nmap gs <Plug>(coc-git-chunkinfo)
+" show commit contains current position
+nmap gc <Plug>(coc-git-commit) 
+" create text object for git chunks
+omap ig <Plug>(coc-git-chunk-inner)
+xmap ig <Plug>(coc-git-chunk-inner)
+omap ag <Plug>(coc-git-chunk-outer)
+xmap ag <Plug>(coc-git-chunk-outer)
 
 " Map keys 
 " goto
@@ -364,10 +374,31 @@ nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
 " Refactoring
-nmap cr <Plug>(coc-rename)
-nmap <F2> :call CocActionAsync('format')<CR>
-command! Fold :call CocActionAsync('fold')<CR>
-nnoremap <F3> :call <SID>show_documentation()<CR>
+nmap <leader>cr <Plug>(coc-rename)
+nmap <leader>cf <Plug>(coc-format)
+nmap <leader>ch  :call <SID>show_documentation()<CR>
+" Add `:Fold` command to fold current buffer.
+command! -nargs=? Fold :call CocActionAsync('fold', <f-args>)
+
+" List actions
+nnoremap <leader>al :CocList actions<CR>
+nnoremap <leader>l :CocList diagnostics<CR>
+" Control P searchs files in CWD.
+nnoremap <silent> <C-p> :CocList files<CR>
+" Control t searches inside files in CWD.
+nnoremap <C-t> :CocList grep<CR>
+" Control f searches inside files in CWD for current world cursor is on.
+nnoremap <silent> <C-f> :exe 'CocList -I --input='.expand('<cword>').' grep'<CR>
+
+" Remap for do codeAction of current line
+nmap <leader>ac  <Plug>(coc-codeaction)
+" Do code action for selection in visual mode.
+vmap <leader>ac  <Plug>(coc-codeaction-selected)
+" Fix autofix problem of current line
+nmap <leader>qf  <Plug>(coc-fix-current)
+" Fix autofix problem of current line
+vmap <leader>qf  <Plug>(coc-fix-selected)
+
 
 function! s:show_documentation()
   if &filetype == 'vim'
@@ -378,4 +409,18 @@ function! s:show_documentation()
 endfunction
 
 " 
-" 
+"" Coverage settings
+let g:coverage_sign_covered='C'
+let g:coverage_sign_uncovered='U'
+
+function! ToggleShowCoverage()
+  if g:coverage_show_covered == 0
+    let g:coverage_show_covered=1
+    let g:coverage_show_uncovered=1
+  else
+    let g:coverage_show_covered=0
+    let g:coverage_show_uncovered=0
+  endif
+endfunction
+
+nmap <silent> <leader>sc :call ToggleShowCoverage()<CR>
