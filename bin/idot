@@ -1,0 +1,20 @@
+#!/bin/bash
+#
+# z3bra -- 2014-01-21
+# vantreeseba -- 2020-04-24
+
+# base00 #272822
+
+bgcolor="#272822";
+fgcolor="#f6f5ee";
+
+dot -Tpng \
+  -Grankdir="LR" \
+  -Gmargin="0" \
+  -Gbgcolor=$bgcolor \
+  -Gcolor=$fgcolor \
+  -Ncolor=$fgcolor \
+  -Nfontcolor=$fgcolor \
+  -Ecolor=$fgcolor \
+  -Efontcolor=$fgcolor \
+  < /dev/stdin | icat

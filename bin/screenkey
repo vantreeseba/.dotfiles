@@ -1,0 +1,106 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# "screenkey" is distributed under GNU GPLv3+, WITHOUT ANY WARRANTY.
+# Copyright(c) 2010-2012: Pablo Seminario <pabluk@gmail.com>
+# Copyright(c) 2015-2016: wave++ "Yuri D'Elia" <wavexx@thregr.org>.
+
+from __future__ import print_function, unicode_literals
+
+from Screenkey import *
+
+import logging
+import os
+import re
+from argparse import ArgumentParser
+
+
+def geometry(string):
+    size = re.match(r'^(\d+)x(\d+)(\+\d+\+\d+)?$', string)
+    if size is None:
+        raise TypeError
+    wh = [int(size.group(1)), int(size.group(2))]
+    if size.group(3) is None:
+        xy = [0, 0]
+    else:
+        pos = re.match(r'^\+(\d+)\+(\d+)$', size.group(3))
+        xy = [int(pos.group(1)), int(pos.group(2))]
+    return xy + wh
+
+
+def main():
+    ap = ArgumentParser(description=APP_DESC, version=VERSION)
+    ap.add_argument("-d", "--debug", action="store_true",
+                    help=_("enable debugging"))
+    ap.add_argument("--no-systray", action="store_true",
+                    help=_("do not create system tray icon"))
+    ap.add_argument("-t", "--timeout", type=float, help=_("timeout in seconds"))
+    ap.add_argument("-p", "--position", choices=POSITIONS,
+                    help=_("set vertical position"))
+    ap.add_argument("--persist", action='store_true', default=None,
+                    help=_("make window persistent"))
+    ap.add_argument("-s", "--font-size", choices=FONT_SIZES,
+                    help=_("set font size"))
+    ap.add_argument("-g", "--geometry", type=geometry,
+                    help=_("set fixed area/window geometry"))
+    ap.add_argument("--key-mode", choices=KEY_MODES,
+                    help=_("set key processing mode"))
+    ap.add_argument("--bak-mode", choices=BAK_MODES,
+                    help=_("backspace processing mode"))
+    ap.add_argument("--mods-mode", choices=MODS_MODES,
+                    help=_("modifiers visualization mode"))
+    ap.add_argument("-m", "--mods-only", action="store_true", default=None,
+                    help=_("show only keys with modifiers pressed"))
+    ap.add_argument("--multiline", action="store_true", default=None,
+                    help=_("span text over multiple lines"))
+    ap.add_argument("--vis-shift", action="store_true", default=None,
+                    help=_("always show Shift when modifiers are pressed"))
+    ap.add_argument("--no-whitespace", dest='vis_space', action="store_false", default=None,
+                    help=_("disable visualization of whitespace"))
+    ap.add_argument("--show-settings", action="store_true",
+                    help=_("show settings dialog on start"))
+    ap.add_argument("--scr", dest='screen', type=int,
+                    help=_("show on the specified screen number"))
+    ap.add_argument("-f", "--font", dest='font_desc',
+                    help=_("set font family/weight"))
+    ap.add_argument("--font-color", dest='font_color',
+                    help=_("set font color"))
+    ap.add_argument("--bg-color", dest='bg_color',
+                    help=_("background color"))
+    ap.add_argument("--opacity", dest='opacity', type=float,
+                    help=_("window opacity (in range 0.0-1.0)"))
+    ap.add_argument("--ignore", action='append', metavar='KeySym', default=[],
+                    help=_("Ignore the specified KeySym"))
+    ap.add_argument("--compr-cnt", type=int, metavar='COUNT',
+                    help=_("Compress key repeats after the specified count"))
+    ap.add_argument("-M", "--mouse", action="store_true", default=None,
+                    help=_("show the mouse buttons"))
+    ap.add_argument("--mouse-fade", type=float, dest='button_hide_duration',
+                    help=_("Mouse buttons fade duration in seconds"))
+    args = ap.parse_args()
+
+    # Set options
+    options = Options()
+    for arg in ['timeout', 'position', 'persist', 'font_desc', 'font_color', 'bg_color',
+                'font_size', 'geometry', 'key_mode', 'bak_mode', 'mods_mode', 'mods_only',
+                'multiline', 'vis_shift', 'vis_space', 'screen', 'no_systray',
+                'opacity', 'ignore', 'compr_cnt', 'mouse', 'button_hide_duration']:
+        if getattr(args, arg) is not None:
+            options[arg] = getattr(args, arg)
+
+    # Initialize logger
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(APP_NAME)
+
+    import Screenkey.screenkey as sc
+    sc.Screenkey(logger=logger, options=options, show_settings=args.show_settings)
+    try:
+        sc.run()
+    except KeyboardInterrupt:
+        os._exit(0)
+
+
+if __name__ == "__main__":
+    main()

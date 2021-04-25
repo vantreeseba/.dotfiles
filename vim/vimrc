@@ -4,31 +4,51 @@ set nocompatible
 call plug#begin('~/.vim/bundle')
   Plug 'tpope/vim-surround' " Adds movement/changes for surrounds
   Plug 'tpope/vim-repeat'
-
+  "
   Plug 'scrooloose/nerdtree'
   Plug 'scrooloose/nerdcommenter'
-
+  
   Plug 'chriskempson/base16-vim'
   Plug 'editorconfig/editorconfig-vim'
-
+ 
   Plug 'itchyny/lightline.vim'
   Plug 'mengelbrecht/lightline-bufferline'
-
+  
   Plug 'Valloric/MatchTagAlways'
   Plug 'neoclide/coc.nvim', {'branch': 'release'}
   " language syntax definitions
-  Plug 'sheerun/vim-polyglot'
-  Plug 'jparise/vim-graphql'
+  " Plug 'sheerun/vim-polyglot'
+  " Plug 'jparise/vim-graphql'
   " Does doc generation.
   " Plug 'kkoomen/vim-doge', { 'do': { -> doge#install() } }
   Plug 'kkoomen/vim-doge', { 'dir':'~/code/vantreeseba/vim-doge', 'do': { -> doge#install() } }
   " Does coverage reporting when unit tests exist.
-  Plug 'ruanyl/coverage.vim'
+  " Plug 'ruanyl/coverage.vim'
   " viml unit testing
-  Plug 'junegunn/vader.vim'
+  " Plug 'junegunn/vader.vim'
+  
+  " Plug 'wellle/targets.vim'
+  Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
 
 " Initialize plugin system
 call plug#end()
+
+lua <<EOF
+local parser_config = require "nvim-treesitter.parsers".get_parser_configs()
+parser_config.haxe = {
+  install_info = {
+    url = "~/code/vantreeseba/tree-sitter-haxe", -- local path or git repo
+    files = {"src/parser.c"}
+  },
+  filetype = "haxe"
+}
+
+require'nvim-treesitter.configs'.setup {
+  highlight = {
+    enable = true,
+  },
+}
+EOF
 
 let g:coc_global_extensions = [ 
       \ 'coc-diagnostic',
@@ -39,7 +59,8 @@ let g:coc_global_extensions = [
       \ 'coc-pairs',
       \ 'coc-json',
       \ 'coc-lists',
-      \ 'coc-haxe'
+      \ 'coc-haxe',
+      \ 'coc-perl',
       \ ]
 
 set mouse=a " Enable mouse in all modes
@@ -47,7 +68,7 @@ set t_Co=256 " Set terminal to 256 colors.
 set t_AB=^[[48;5;%dm
 set t_AF=^[[38;5;%dm
 let base16colorspace=256
-colorscheme base16-monokai-vantreeseba
+colorscheme base16-monokai
 
 let mapleader=','   "Set the leader key to baus status
 set number          " Show line numbers
@@ -172,14 +193,19 @@ syntax on
 set synmaxcol=200
 filetype plugin on
 filetype plugin indent on
-set foldmethod=manual
+" set foldmethod=manual
+
+set foldmethod=expr
+set foldexpr=nvim_treesitter#foldexpr()
 
 au FileType javascript setlocal colorcolumn=100
 
 augroup ft
   au!
+  autocmd BufNewFile,BufRead *.graphql set ft=graphql
   autocmd BufNewFile,BufRead *.prisma set ft=graphql
   autocmd BufNewFile,BufRead *.hxml set ft=hxml
+  autocmd BufNewFile,BufRead *.hx set ft=haxe
   autocmd BufNewFile,BufRead PULLREQ_EDITMSG set ft=gitcommit
   au FileType vue setlocal ft=javascript.vue
   au FileType js setlocal ft=javascript.js
@@ -312,7 +338,7 @@ map <leader>f :NERDTreeFind<CR>
 
 "" DoGe Settings
 let g:doge_filetype_aliases = {
-\  'javascript': ['vue', 'haxe'],
+\  'javascript': ['vue', 'haxe', 'typescript'],
 \}
 
 let g:doge_javascript_settings = {
@@ -333,8 +359,8 @@ let g:mta_filetypes = {
 " coc Settings.
 let g:coc_snippet_next = '<tab>'
 
-autocmd CursorHold * silent call CocActionAsync('highlight')
-autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+" autocmd CursorHold * silent call CocActionAsync('highlight')
+" autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
 
 function! s:check_back_space() abort
   let col = col('.') - 1
@@ -378,7 +404,7 @@ nmap <leader>cr <Plug>(coc-rename)
 nmap <leader>cf <Plug>(coc-format)
 nmap <leader>ch  :call <SID>show_documentation()<CR>
 " Add `:Fold` command to fold current buffer.
-command! -nargs=? Fold :call CocActionAsync('fold', <f-args>)
+" command! -nargs=? Fold :call CocActionAsync('fold', <f-args>)
 
 " List actions
 nnoremap <leader>al :CocList actions<CR>

@@ -1,0 +1,94 @@
+#!/bin/bash
+#
+# z3bra -- 2014-01-21
+# vantreeseba -- 2020-04-24
+std_in_create_tmpfile() {
+  tmpfile=$(mktemp /tmp/icat-image.XXXXXX)
+  if [[ -p /dev/stdin ]]; then
+    cat ->$tmpfile
+  fi
+  echo $tmpfile
+}
+
+# Get the first passed arg, or get the std input.
+FILENAME=${1-`std_in_create_tmpfile`}
+
+# Exit early if no args
+if test -z $FILENAME; then 
+  echo a filename is required or pass in data via stdin && exit;
+fi
+
+# Exit early if file is not found.
+! test -a $FILENAME && echo icat: $FILENAME: no such file or directory && exit
+
+W3MIMGDISPLAY="/usr/lib/w3m/w3mimgdisplay"
+FONTH=17 # Size of one terminal row
+FONTW=17  # Size of one terminal column
+COLUMNS=`tput cols` # get number of columns in terminal
+LINES=`tput lines` # get number of lines in terminal
+
+# use w3mimgdisplay command 5 to get width and height of image.
+read width height <<< `echo -e "5;$FILENAME" | $W3MIMGDISPLAY`
+
+max_width=$(($FONTW * $COLUMNS))
+max_height=$(($FONTH * $(($LINES - 2)))) # substract one line for prompt
+
+if test $width -gt $max_width; then
+  height=$(($height * $max_width / $width))
+  width=$max_width
+fi
+if test $height -gt $max_height; then
+  width=$(($width * $max_height / $height))
+  height=$max_height
+fi
+
+
+# W3M params for clear
+# <x>;<y>;<w>;<h>
+# w3m_clear="6;0;0;$width;$height";
+
+# Move cursor out of drawing area to prevent artifacts.
+# tput clear
+
+tput cup $(($height/$FONTH)) 0
+
+sleep 0.01
+# W3M Command params for drawing.
+# <n>;<x>;<y>;<w>;<h>;<sx>;<sy>;<sw>;<sh>;<path>
+# each \n is a new command
+# draw image, then sync comms(\n4), then sync image(\n3); 
+w3m_draw="0;1;0;0;$width;$height;;;;;$FILENAME\n4;\n3;"
+
+echo -e $w3m_draw | $W3MIMGDISPLAY
+
+trap "rm -f ${tmpfile}" EXIT
+# echo -e $w3m_clear | $W3MIMGDISPLAY
+
+# taken from 
+# https://github.com/mackyle/w3m-sf/blob/master/w3mimgdisplay.c
+#
+# /*
+#  * w3mimg protocol
+#  *  0  1  2 ....
+#  * +--+--+--+--+ ...... +--+--+
+#  * |op|; |args             |\n|
+#  * +--+--+--+--+ .......+--+--+
+#  *
+#  * args is separeted by ';'
+#  * op   args
+#  *  0;  params          draw image
+#  *  1;  params          redraw image
+#  *  2;  -none-          terminate drawing
+#  *  3;  -none-          sync drawing
+#  *  4;  -none-          nop, sync communication
+#  *                      response '\n'
+#  *  5;  path            get size of image,
+#  *                      response "<width> <height>\n"
+#  *  6;  params(6)       clear image
+#  *
+#  * params
+#  *      <n>;<x>;<y>;<w>;<h>;<sx>;<sy>;<sw>;<sh>;<path>
+#  * params(6)
+#  *      <x>;<y>;<w>;<h>
+#  *
+#  */

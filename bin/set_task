@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ "$1" == "clear" ] || [ "$1" == "" ]; then
+  echo clearing!
+  echo "" > ~/.current_task
+else
+  echo setting!
+  echo $1 > ~/.current_task
+fi

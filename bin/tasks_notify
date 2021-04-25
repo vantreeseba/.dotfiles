@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#export display since this runs as root.
+export DISPLAY=":0.0"
+
+#Build notification
+title="TASKS"
+tasks="$(task minimal | tail -n +4 | head -n 10)"
+
+#Actually send notification to dbus/naughty
+notify-send "$title" "$tasks"
