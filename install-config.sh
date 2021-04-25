@@ -5,6 +5,7 @@ if test -z $1; then
   echo -e 'Here are the available installs: \n'
   echo -all
   echo -vim
+  echo -bin
   echo -awesome
   echo -e ''
 fi
@@ -18,6 +19,14 @@ fi
 if test "$1" = "-all" || test "$1" = "-vim"; then
   echo symlinking vim/vimrc to ~/.vimrc;
   ln -rbfs vim/vimrc ~/.vimrc
+fi
+
+if test "$1" = "-all" || test "$1" = "-bin"; then
+  files=$(ls bin)
+  for file in $files; do
+    echo -e "symlinking bin/$file to ~/bin/$file";
+    ln -rbfs bin/$file ~/bin/$file
+  done
 fi
 
 if test "$1" = "-all" || test "$1" = "-awesome"; then
