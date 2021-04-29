@@ -25,17 +25,14 @@ fgcolor=$base0A
 nfgcolor=$base0B
 efgcolor=$base0E
 
-dot -Tpng \
-  -Grankdir="LR" \
-  -Gcenter="1" \
-  -Gmargin="0.1" \
+neato -Tpng \
+  -Gmargin=0 \
   -Gsep="+8" \
   -Goverlap="scalexy" \
   -Gbgcolor=$bgcolor \
   -Gcolor=$fgcolor \
   -Nfontname="Hack Nerd Font Mono" \
   -Nfontsize="12" \
-  -Nfontcolor=$fgcolor \
   -Nwidth=0.25 \
   -Nheight=0.25 \
   -Ncolor=$nfgcolor \

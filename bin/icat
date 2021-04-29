@@ -22,13 +22,18 @@ fi
 ! test -a $FILENAME && echo icat: $FILENAME: no such file or directory && exit
 
 W3MIMGDISPLAY="/usr/lib/w3m/w3mimgdisplay"
-FONTH=17 # Size of one terminal row
-FONTW=17  # Size of one terminal column
+FONTH=19 # Size of one terminal row
+FONTW=12  # Size of one terminal column
 COLUMNS=`tput cols` # get number of columns in terminal
 LINES=`tput lines` # get number of lines in terminal
 
 # use w3mimgdisplay command 5 to get width and height of image.
 read width height <<< `echo -e "5;$FILENAME" | $W3MIMGDISPLAY`
+
+# use cursor_pos to get cursor position
+read y x <<< `cursor_pos`
+x_px=$(($x*$FONTW))
+y_px=$(($y*$FONTH))
 
 max_width=$(($FONTW * $COLUMNS))
 max_height=$(($FONTH * $(($LINES - 2)))) # substract one line for prompt
@@ -42,53 +47,49 @@ if test $height -gt $max_height; then
   height=$max_height
 fi
 
-
 # W3M params for clear
 # <x>;<y>;<w>;<h>
-# w3m_clear="6;0;0;$width;$height";
+w3m_clear="6;$x_px;$y_px;$max_width;$max_height\n3;";
 
 # Move cursor out of drawing area to prevent artifacts.
-# tput clear
+tput cup $((($height+$y_px)/$FONTH)) 0
 
-tput cup $(($height/$FONTH)) 0
-
-sleep 0.01
 # W3M Command params for drawing.
-# <n>;<x>;<y>;<w>;<h>;<sx>;<sy>;<sw>;<sh>;<path>
+# look at comment below to understand 
 # each \n is a new command
 # draw image, then sync comms(\n4), then sync image(\n3); 
-w3m_draw="0;1;0;0;$width;$height;;;;;$FILENAME\n4;\n3;"
+w3m_draw="0;1;$x_px;$y_px;$width;$height;;;;;$FILENAME\n4;\n3;"
 
+# echo -e $w3m_clear | $W3MIMGDISPLAY
 echo -e $w3m_draw | $W3MIMGDISPLAY
 
 trap "rm -f ${tmpfile}" EXIT
-# echo -e $w3m_clear | $W3MIMGDISPLAY
 
 # taken from 
 # https://github.com/mackyle/w3m-sf/blob/master/w3mimgdisplay.c
 #
-# /*
-#  * w3mimg protocol
-#  *  0  1  2 ....
-#  * +--+--+--+--+ ...... +--+--+
-#  * |op|; |args             |\n|
-#  * +--+--+--+--+ .......+--+--+
-#  *
-#  * args is separeted by ';'
-#  * op   args
-#  *  0;  params          draw image
-#  *  1;  params          redraw image
-#  *  2;  -none-          terminate drawing
-#  *  3;  -none-          sync drawing
-#  *  4;  -none-          nop, sync communication
-#  *                      response '\n'
-#  *  5;  path            get size of image,
-#  *                      response "<width> <height>\n"
-#  *  6;  params(6)       clear image
-#  *
-#  * params
-#  *      <n>;<x>;<y>;<w>;<h>;<sx>;<sy>;<sw>;<sh>;<path>
-#  * params(6)
-#  *      <x>;<y>;<w>;<h>
-#  *
-#  */
+# w3mimg protocol
+#  0  1  2 ....
+# +--+--+--+--+ ...... +--+--+
+# |op|; |args             |\n|
+# +--+--+--+--+ .......+--+--+
+#
+#  args is separated by ';'
+#  op   args
+#  0;  params          draw image
+#  1;  params          redraw image
+#  2;  -none-          terminate drawing
+#  3;  -none-          sync drawing
+#  4;  -none-          nop, sync communication
+#                      response '\n'
+#  5;  path            get size of image,
+#                      response "<width> <height>\n"
+#  6;  params(6)       clear image
+#
+# params (after first <c>; where c is the command above).
+#      <n>;<x>;<y>;<w>;<h>;<sx>;<sy>;<sw>;<sh>;<path>
+#
+# params(6)
+#      <x>;<y>;<w>;<h>
+#
+#

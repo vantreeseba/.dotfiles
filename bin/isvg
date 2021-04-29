@@ -1,0 +1,4 @@
+#!/bin/bash
+# vantreeseba -- 2020-04-24
+# This script outputs svg to bash terminal 
+rsvg-convert < /dev/stdin | icat 
